@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Puzzle Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="title-icon">🧩</span>
+                    Crossword Puzzle Generator
+                </h1>
+                <p class="subtitle">Create stunning crossword puzzles with AI-powered generation</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Control Panel -->
+            <section class="control-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📝 Configuration</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="crosswordForm">
+                            <!-- Structure Selection -->
+                            <div class="form-group">
+                                <label for="structure" class="form-label">
+                                    <span class="label-icon">🏗️</span>
+                                    Crossword Structure
+                                </label>
+                                <div class="select-wrapper">
+                                    <select id="structure" name="structure" class="form-select" required>
+                                        <option value="">Select a structure...</option>
+                                        {% for structure in structures %}
+                                        <option value="{{ structure }}">{{ structure }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div id="structurePreview" class="preview-box"></div>
+                            </div>
+
+                            <!-- Words Selection -->
+                            <div class="form-group">
+                                <label for="words" class="form-label">
+                                    <span class="label-icon">📚</span>
+                                    Word List
+                                </label>
+                                <div class="select-wrapper">
+                                    <select id="words" name="words" class="form-select" required>
+                                        <option value="">Select a word list...</option>
+                                        {% for word in words %}
+                                        <option value="{{ word }}">{{ word }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div id="wordsPreview" class="preview-box"></div>
+                            </div>
+
+                            <!-- Generate Button -->
+                            <button type="submit" class="btn btn-primary" id="generateBtn">
+                                <span class="btn-icon">✨</span>
+                                <span class="btn-text">Generate Crossword</span>
+                                <span class="btn-loader"></span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="card instructions-card">
+                    <div class="card-header">
+                        <h3>💡 How to Use</h3>
+                    </div>
+                    <div class="card-body">
+                        <ol class="instructions-list">
+                            <li>Select a crossword structure from the dropdown</li>
+                            <li>Choose a word list to fill the puzzle</li>
+                            <li>Click "Generate Crossword" to create your puzzle</li>
+                            <li>View the interactive result or download as image</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Result Panel -->
+            <section class="result-panel">
+                <!-- Placeholder -->
+                <div id="placeholder" class="placeholder">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">🎯</div>
+                        <h2>Ready to Create!</h2>
+                        <p>Select a structure and word list, then click generate to see your crossword puzzle here.</p>
+                    </div>
+                </div>
+
+                <!-- Solving Visualization -->
+                <div id="solvingVisualization" class="solving-visualization" style="display: none;">
+                    <div class="solving-header">
+                        <h2>🧠 AI Solving in Progress...</h2>
+                        <p>Watch the algorithm find the perfect word placements</p>
+                    </div>
+
+                    <div class="solving-content">
+                        <!-- Visualization Grid -->
+                        <div class="visualization-panel">
+                            <div class="panel-header">
+                                <h3>📊 Live Grid</h3>
+                            </div>
+                            <div id="visualizationGrid" class="visualization-grid">
+                                <div class="vis-placeholder">Initializing solver...</div>
+                            </div>
+                        </div>
+
+                        <!-- Solving Stats & Log -->
+                        <div class="solving-sidebar">
+                            <!-- Stats -->
+                            <div class="stats-panel">
+                                <div class="panel-header">
+                                    <h3>📈 Statistics</h3>
+                                </div>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div class="stat-icon">💭</div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">Attempts</div>
+                                            <div class="stat-value" id="attemptsCount">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">✅</div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">Placements</div>
+                                            <div class="stat-value" id="placementsCount">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">↩️</div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">Backtracks</div>
+                                            <div class="stat-value" id="backtracksCount">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Activity Log -->
+                            <div class="log-panel">
+                                <div class="panel-header">
+                                    <h3>📝 Activity Log</h3>
+                                </div>
+                                <div id="solvingLog" class="solving-log"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="error-message" style="display: none;">
+                    <div class="error-content">
+                        <span class="error-icon">⚠️</span>
+                        <div class="error-text">
+                            <h3>Oops! Something went wrong</h3>
+                            <p id="errorText"></p>
+                        </div>
+                        <button class="btn-close" onclick="hideError()">×</button>
+                    </div>
+                </div>
+
+                <!-- Result Display -->
+                <div id="resultDisplay" class="result-display" style="display: none;">
+                    <div class="result-header">
+                        <h2>🎨 Your Crossword Puzzle</h2>
+                        <div class="result-actions">
+                            <button class="btn btn-secondary" onclick="toggleView()">
+                                <span id="viewToggleIcon">🖼️</span>
+                                <span id="viewToggleText">Image View</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="downloadImage()">
+                                <span>💾</span>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Grid View -->
+                    <div id="gridView" class="grid-container">
+                        <div id="crosswordGrid" class="crossword-grid"></div>
+                    </div>
+
+                    <!-- Image View -->
+                    <div id="imageView" class="image-container" style="display: none;">
+                        <img id="crosswordImage" src="" alt="Crossword Puzzle" class="crossword-image">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with ❤️ using Flask, HTML, CSS & JavaScript</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p class="loading-text">Generating your crossword puzzle...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
